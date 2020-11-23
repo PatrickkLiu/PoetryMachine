@@ -2,8 +2,8 @@
 ///By Pinyao Liu.
 
 /** Setup: 
-*(may take a while to download library,there's 
-* also a demo recording in the zip folder)
+ *(may take a while to download library,there's 
+ * also a demo recording in the zip folder)
  
  - Installthe WebSockets Library 
  - Run this Sketch
@@ -11,7 +11,7 @@
  - Transcribed speechrecognition results will be printed to the console.
  
  */
- 
+
 /**
  * Drawing tool for poets. Speak and create.
  * 
@@ -38,12 +38,17 @@
 
 
 
-
+import processing.sound.*;
 import websockets.*;
 WebsocketServer socket;
 PFont Garamond;
 String letters = "It goes like this: ";
+JSONObject  afinn;
+String textinput ;
 Poem p1;
+
+SoundFile e1, e2, e3, e4, e5;
+
 
 
 void setup() {
@@ -52,11 +57,18 @@ void setup() {
   background(255);
   smooth();
 
-  Garamond=createFont("Garamond.ttf", 32);
+  Garamond=createFont("Garamond.ttf", 32); // load font
   //RobotoMono = createFont("RobotoMono-Regular.ttf", 32);
   //Palatinolino = createFont("Palatino-lino.ttf", 32);
 
-  p1 = new Poem(Garamond, 5, 0);
+  p1 = new Poem(Garamond, 5, 0); // create new visual poem
+
+  afinn = loadJSONObject("afinn111.json"); // load sentiment analysis json object
+  e1 = new SoundFile(this, "e1.mp3");
+  e2 = new SoundFile(this, "e2.mp3");
+  e3 = new SoundFile(this, "e3.mp3");
+  e4 = new SoundFile(this, "e4.mp3");
+  e5 = new SoundFile(this, "e5.mp3");
 }
 
 void draw() {
@@ -66,7 +78,43 @@ void draw() {
 
 void webSocketServerEvent(String msg) {
   letters += msg;
-  println(msg);
+  //println(msg);
+  String[] words = msg.split(" ");
+  println(words);
+
+
+  float[] scoredwords;
+  int totalScore = 0;
+  for (int i = 0; i < words.length; i++) {
+    String word = words[i].toLowerCase();
+
+
+    if (afinn.isNull(word) == false) {
+      float score = afinn.getFloat(word);
+      println(word, score);
+      totalScore += score;
+    }
+
+    //comp.html('comparative: ' + totalScore / words.length);
+  }
+  println(totalScore);
+  switch(totalScore) {
+  case 0: 
+    e3.play();  
+    break;
+  case -4:
+    e1.play();  
+    break;
+  case -2:
+    e2.play();  
+    break; 
+  case 2:
+    e3.play();  
+    break;     
+  case 3:
+    e4.play();  
+    break;
+  }
 }
 
 class Poem
